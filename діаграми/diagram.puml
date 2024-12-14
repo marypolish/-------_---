@@ -1,0 +1,33 @@
+@startuml
+
+actor User
+
+'--- Управління подіями ---
+usecase "Додати подію" as AddEvent
+usecase "Редагувати подію" as EditEvent
+usecase "Видалити подію" as DeleteEvent
+
+'--- Перегляд подій ---
+usecase "Перегляд подій з фільтрами" as ViewEvents
+usecase "Вибір фільтрів за датою та типом" as FilterOptions
+
+'--- Сповіщення ---
+usecase "Отримання сповіщень про події" as ReceiveNotifications
+usecase "Налаштування параметрів сповіщень" as NotificationSettings
+
+User --> AddEvent
+User --> EditEvent
+User --> DeleteEvent
+User --> ViewEvents
+User --> ReceiveNotifications
+
+' Включення фільтрів у перегляд подій
+ViewEvents -down-> FilterOptions : <<include>>
+
+' Розширення видалення події після перегляду
+ViewEvents <.. DeleteEvent : <<extend>>
+
+' Налаштування параметрів як частина отримання сповіщень
+ReceiveNotifications -down-> NotificationSettings : <<include>>
+
+@enduml

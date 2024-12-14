@@ -1,0 +1,38 @@
+@startuml
+
+class Calendar {
+    - List<Event> events
+    + addEvent(Event e)
+    + editEvent(Event e)
+    + deleteEvent(Event e)
+    + filterEvents(Date start, Date end, String type): List<Event>
+}
+
+class Event {
+    - String title
+    - Date startDate
+    - Date endDate
+    - String type
+    + setTitle(String title)
+    + setDates(Date start, Date end)
+    + setType(String type)
+}
+
+class Notification {
+    - String message
+    - Date notificationTime
+    + sendNotification()
+}
+
+class User {
+    - String username
+    - String email
+    + login(String username, String password)
+    + manageEvent(Calendar calendar)
+}
+
+User "1" -- "*" Calendar : manages
+Calendar "1" -- "*" Event : contains
+Event "1" -- "*" Notification : triggers
+
+@enduml

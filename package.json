@@ -1,0 +1,31 @@
+{
+  "name": "smart-calendar",
+  "version": "1.0.0",
+  "description": "Розумний календар подій для кафедри",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "keywords": [
+    "calendar",
+    "education",
+    "events"
+  ],
+  "author": "Polishchuk Mariya",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2",
+    "node": "^20.18.1",
+    "nodemailer": "^6.9.16",
+    "nodemon": "^3.1.7",
+    "pg": "^8.13.1",
+    "pg-hstore": "^2.3.4",
+    "sequelize": "^6.37.5"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
+  }
+}

@@ -1,0 +1,13 @@
+@startuml
+
+component "User Interface" as UI
+component "Event Manager" as EventManager
+component "Notification Service" as NotificationService
+component "Database" as Database
+
+UI --> EventManager : add/edit/delete events
+EventManager --> Database : CRUD operations
+EventManager --> NotificationService : trigger notifications
+NotificationService --> Database : retrieve user settings
+
+@enduml
