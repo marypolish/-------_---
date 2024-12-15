@@ -1,30 +1,7 @@
 const Event = require('../models/event.model');
+const User = require('../models/user.model');
 const Group = require('../models/group.model');
 const Department = require('../models/department.model');
-const jwt = require('jsonwebtoken');
-
-// Middleware для перевірки ролі
-const checkRole = (requiredRoles) => {
-    return (req, res, next) => {
-        try {
-            const token = req.headers.authorization?.split(' ')[1]; // Отримати токен з заголовка
-            if (!token) {
-                return res.status(401).json({ message: 'No token provided' });
-            }
-
-            const decoded = jwt.verify(token, process.env.JWT_SECRET); // Розшифрувати токен
-            req.user = decoded; // Зберегти дані користувача з токена в req.user
-
-            if (!requiredRoles.includes(decoded.role)) {
-                return res.status(403).json({ message: 'Access denied' });
-            }
-
-            next(); // Передати запит далі, якщо роль відповідає вимогам
-        } catch (error) {
-            res.status(401).json({ message: 'Invalid token' });
-        }
-    };
-};
 
 // Отримати всі події
 const getAllEvents = async (req, res) => {
@@ -39,20 +16,36 @@ const getAllEvents = async (req, res) => {
 // Створити нову подію
 const createEvent = async (req, res) => {
     try {
-        const { name, description, date, location, targetGroupId, notifyTime } = req.body;
+        const { name, description, date, location, organizerId, targetGroupId, targetDepartmentId, notifyTime } = req.body;
 
-        // Якщо роль "викладач", перевіряємо, чи подія стосується його кафедри
-        if (req.user.role === 'teacher') {
-            const department = await Department.findByPk(req.user.departmentId);
-            if (!department) {
-                return res.status(403).json({ message: 'Access denied: You are not assigned to any department.' });
-            }
-            req.body.organizerId = req.user.id; // Встановлюємо організатора
+        // Знайти організатора
+        const organizer = await User.findByPk(organizerId);
+        if (!organizer) {
+            return res.status(404).json({ message: 'Organizer not found' });
         }
 
-        // Адміністратор створює подію без обмежень
-        if (req.user.role === 'admin') {
-            req.body.organizerId = req.user.id; // Встановлюємо організатора
+        // Якщо організатор — викладач, перевірити наявність кафедри
+        if (organizer.role === 'teacher'){
+            if (!organizer.departmentId) {
+            return res.status(400).json({ message: 'Teacher must belong to a department to create events' });
+            }
+
+            //Викладач може створювати події тільки для своєї кафедри
+            if (organizer.departmentId !== targetDepartmentId) {
+                return res.status(403).json({ message: 'Teacher can only create events for their own department' });
+            }
+        }
+
+        // Якщо організатор — студент, перевірити наявність групи
+        if (organizer.role === 'student') {
+            if (!organizer.groupId) {
+                return res.status(400).json({ message: 'Student must belong to a group to create events' });
+            }
+
+            // Студент може створювати події тільки для своєї групи
+            if (organizer.groupId !== targetGroupId) {
+                return res.status(403).json({ message: 'Student can only create events for their own group' });
+            }
         }
 
         const newEvent = await Event.create({
@@ -60,7 +53,7 @@ const createEvent = async (req, res) => {
             description,
             date,
             location,
-            organizerId: req.body.organizerId,
+            organizerId,
             targetGroupId,
             notifyTime,
         });
@@ -116,9 +109,16 @@ const updateEvent = async (req, res) => {
 const deleteEvent = async (req, res) => {
     try {
         const event = await Event.findByPk(req.params.id);
+
         if (!event) {
             return res.status(404).json({ message: 'Event not found' });
         }
+
+        // Дозволено тільки адміністраторам
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Access denied' });
+        }
+
         await event.destroy();
         res.status(200).json({ message: 'Event deleted successfully' });
     } catch (error) {
@@ -157,7 +157,6 @@ const getDepartmentEvents = async (req, res) => {
 };
 
 module.exports = {
-    checkRole,
     getAllEvents,
     createEvent,
     getEventById,

@@ -15,7 +15,7 @@ const getAllUsers = async (req, res) => {
 //Створити користувача
 const registerUser = async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { email, password, name, role, departmentId, groupId } = req.body;
 
         // Перевірка на валідну роль
         const validRoles = ["student", "teacher", "admin"];
@@ -29,11 +29,20 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: "User with this email already exists" });
         }
 
+        // Перевірка наявності кафедри, якщо користувач — викладач
+        if (role === 'teacher' && !departmentId) {
+            return res.status(400).json({ message: 'Teacher must belong to a department' });
+        }
+
+        // Перевірка наявності групи, якщо користувач — студент
+        if (role === 'student' && !groupId) {
+            return res.status(400).json({ message: 'Student must belong to a group' });
+        }
+
         // Шифрування пароля
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Створення нового користувача
-        const newUser = await User.create({ name, email, password: hashedPassword, role });
+        const newUser = await User.create({ email, password: hashedPassword, name, role, departmentId, groupId });
         res.status(201).json({
             message: "User registered successfully",
             user: {

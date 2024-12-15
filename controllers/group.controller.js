@@ -13,8 +13,8 @@ const getAllGroups = async (req, res) => {
 //Створити групу
 const createGroup = async (req, res) => {
     try {
-        const { groupCode, course } = req.body;
-        const newGroup = await Group.create({ groupCode, course });
+        const { name } = req.body;
+        const newGroup = await Group.create({ name });
         res.status(201).json(newGroup);
 
     } catch (error) {
