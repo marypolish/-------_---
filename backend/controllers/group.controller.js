@@ -1,4 +1,4 @@
-const Group = require('../models/group.model');
+const Group = require('../../models/group.model');
 
 //Отримати всі групи
 const getAllGroups = async (req, res) => {

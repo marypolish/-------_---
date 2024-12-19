@@ -1,14 +1,21 @@
 const express = require('express');
-const {sequelize} = require('./config/config.js');  // Використовуємо конфігурацію з одного файлу
-const eventRoutes = require('./routes/events.js'); //Підключення маршруту
-const userRoutes = require('./routes/user.js');
-const groupRoutes = require('./routes/group.js');
-const departmentRoutes = require('./routes/department.js');
-const scheduleRoutes = require('./routes/schedule.js');
-const calendarRoutes = require('./routes/calendar.js');
-const remainderRoutes = require('./routes/remainder.js');
+const cors = require('cors');
+const {sequelize} = require('./backend/config/config.js');  // Використовуємо конфігурацію з одного файлу
+const eventRoutes = require('./backend/routes/events.js'); //Підключення маршруту
+const userRoutes = require('./backend/routes/user.js');
+const groupRoutes = require('./backend/routes/group.js');
+const departmentRoutes = require('./backend/routes/department.js');
+const scheduleRoutes = require('./backend/routes/schedule.js');
+const calendarRoutes = require('./backend/routes/calendar.js');
+const remainderRoutes = require('./backend/routes/remainder.js');
 
 const app = express();
+// Дозволити запити з усіх доменів
+app.use(cors({
+  origin: 'http://localhost:3000', // Фронтенд-адреса
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+}));
 app.use(express.json()); // Підключаємо middleware для парсингу JSON
 
 // Підключаємо маршрути
@@ -25,6 +32,6 @@ sequelize.sync({ alter: true })
   .then(() => console.log('База даних синхронізована'))
   .catch((error) => console.error('Помилка при синхронізації:', error));
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
+app.listen(5000, () => {
+  console.log('Server is running on port 5000');
 });

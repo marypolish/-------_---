@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllGroups, createGroup, getGroupById, updateGroup, deleteGroup } = require('../controllers/group.controller');
+const { getAllGroups, createGroup, getGroupById, updateGroup, deleteGroup } = require('../backend/controllers/group.controller');
 
 const router = express.Router();
 

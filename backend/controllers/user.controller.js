@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../models/user.model');
+const User = require('../../models/user.model');
 
 //Отримати всіх користувачів
 const getAllUsers = async (req, res) => {
@@ -57,7 +57,7 @@ const registerUser = async (req, res) => {
     }
 };
 
-//Вхід користувача
+// Вхід користувача
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -76,21 +76,18 @@ const loginUser = async (req, res) => {
 
         // Генерація токена
         const token = jwt.sign(
-            { id: user.id, role: user.role },
-            process.env.JWT_SECRET, // Секретний ключ з .env
-            { expiresIn: '3h' } // Час дії токена
+            {
+                id: user.id, // ID користувача
+                role: user.role, // Роль користувача
+                groupId: user.groupId, // ID групи студента
+                departmentId: user.departmentId // ID кафедри викладача
+            },
+            process.env.JWT_SECRET, // Секрет для підпису токена
+            { expiresIn: '1h' } // Термін дії токена
         );
 
-        res.status(200).json({
-            message: 'Login successful',
-            token,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-            },
-        });
+        // Повертаємо токен
+        return res.status(200).json({ token });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

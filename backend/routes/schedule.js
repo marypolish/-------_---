@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllSchedules, createSchedule, getScheduleById, updateSchedule, deleteSchedule, } = require('../controllers/schedule.controller');
+const { getAllSchedules, createSchedule, getScheduleById, updateSchedule, deleteSchedule, } = require('../backend/controllers/schedule.controller');
 
 const router = express.Router();
 

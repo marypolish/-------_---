@@ -44,10 +44,6 @@ const Event = sequelize.define(
       },
       allowNull: true, // Може бути відсутнім, якщо подія індивідуальна або для групи
     },
-    notifyTime: {
-      type: DataTypes.INTEGER, // Час для нагадування у хвилинах до події
-      allowNull: true,
-    },
   },
   {
     tableName: "events",

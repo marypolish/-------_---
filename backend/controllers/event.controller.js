@@ -1,7 +1,7 @@
-const Event = require('../models/event.model');
-const User = require('../models/user.model');
-const Group = require('../models/group.model');
-const Department = require('../models/department.model');
+const Event = require('../../models/event.model');
+const User = require('../../models/user.model');
+const Group = require('../../models/group.model');
+const Department = require('../../models/department.model');
 
 // Отримати всі події
 const getAllEvents = async (req, res) => {
@@ -67,20 +67,43 @@ const createEvent = async (req, res) => {
 // Отримати подію за ID
 const getEventById = async (req, res) => {
     try {
-        const event = await Event.findByPk(req.params.id);
+        const event = await Event.findByPk(req.params.id); // Отримуємо подію за ID
 
+        // Перевірка доступу
         if (!event) {
             return res.status(404).json({ message: 'Event not found' });
         }
 
-        // Перевірка доступу для студента
-        if (req.user.role === 'student' && req.user.groupId !== event.targetGroupId) {
-            return res.status(403).json({ message: 'Access denied' });
+        // Логування значень для перевірки
+        console.log('User Group ID:', req.user.groupId); // Вивести ID групи користувача
+        console.log('Event Target Group ID:', event.targetGroupId); // Вивести ID групи події
+
+        // Перевірка для студента
+        if (req.user.role === 'student') {
+            // Студент може отримати доступ лише до подій своєї групи
+            if (!req.user.groupId) {
+                return res.status(403).json({ message: 'Access denied: Missing groupId' });
+            }
+            if (req.user.groupId !== event.targetGroupId) {
+                return res.status(403).json({ message: 'Access denied: Group mismatch' });
+            }
+        } else if (req.user.role === 'teacher') {
+            // Викладач має доступ до всіх подій
+            console.log('Teacher accessing event:', req.user.id);
+        } else if (req.user.role === 'admin') {
+            // Адміністратор має доступ до всіх подій
+            console.log('Admin accessing event:', req.user.id);
+        } else {
+            // Відмова доступу для інших ролей
+            return res.status(403).json({ message: 'Access denied: Role not allowed' });
         }
 
-        res.status(200).json(event);
+        // Якщо доступ дозволено, відправляємо подію
+        return res.status(200).json(event);
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
     }
 };
 
