@@ -24,7 +24,7 @@ function updateCalendar() {
     const totalDaysInMonth = lastDay.getDate();
 
     // Створюємо порожні клітинки до першого дня
-    for (let i = 0; i < firstDayOfWeek; i++) {
+    for (let i = 0; i < (firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1); i++) {
         const emptyCell = document.createElement('div');
         daysContainer.appendChild(emptyCell);
     }
@@ -35,7 +35,7 @@ function updateCalendar() {
         dayElement.classList.add('day');
         dayElement.innerText = day;
 
-        // Активні дні (не вихідні) можна позначити по-своєму
+        // Якщо сьогоднішній день, виділяємо жирним
         if (day === currentDate.getDate() && currentMonth === new Date().getMonth()) {
             dayElement.style.fontWeight = 'bold';
         }
