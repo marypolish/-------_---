@@ -17,7 +17,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     if (response.ok) {
         localStorage.setItem('token', data.token);
         alert('Успішний вхід');
-        window.location.href = '/'; // перенаправлення на головну сторінку
+        window.location.href = 'calendar.html'; // перенаправлення на головну сторінку
     } else {
         alert(data.message || 'Помилка входу');
     }

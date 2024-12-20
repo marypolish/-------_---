@@ -12,7 +12,7 @@ const remainderRoutes = require('./backend/routes/remainder.js');
 const app = express();
 // Дозволити запити з усіх доменів
 app.use(cors({
-  origin: 'http://localhost:3000', // Фронтенд-адреса
+  origin: ['http://localhost:5500', 'http://127.0.0.1:5500'], // Фронтенд-адреса
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
@@ -32,6 +32,6 @@ sequelize.sync({ alter: true })
   .then(() => console.log('База даних синхронізована'))
   .catch((error) => console.error('Помилка при синхронізації:', error));
 
-app.listen(5000, () => {
-  console.log('Server is running on port 5000');
+app.listen(5500, () => {
+  console.log('Server is running on port 5500');
 });

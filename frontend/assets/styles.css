@@ -1,4 +1,68 @@
-#calendar {
-    max-width: 900px;
-    margin: 40px auto;
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.calendar {
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #f9f9f9;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+}
+
+button {
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+button:hover {
+    color: #ccc;
+}
+
+.days-of-week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background-color: #f1f1f1;
+    padding: 10px 0;
+    font-weight: bold;
+    text-align: center;
+}
+
+.days-container {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-gap: 5px;
+    padding: 10px;
+}
+
+.day {
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.day:hover {
+    background-color: #ddd;
+    border-radius: 50%;
+}
+
+.day.inactive {
+    color: #ccc;
+    cursor: default;
 }
