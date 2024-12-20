@@ -1,7 +1,7 @@
-const Event = require('../../models/event.model');
-const User = require('../../models/user.model');
-const Group = require('../../models/group.model');
-const Department = require('../../models/department.model');
+const Event = require('../models/event.model');
+const User = require('../models/user.model');
+const Group = require('../models/group.model');
+const Department = require('../models/department.model');
 
 // Отримати всі події
 const getAllEvents = async (req, res) => {

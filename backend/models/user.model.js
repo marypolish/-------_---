@@ -25,7 +25,7 @@ const User = sequelize.define('User', {
       model: 'departments',
       key: 'id',
     },
-    allowNull: true, // Викладачі можуть не мати кафедри
+    allowNull: true, 
   },
   groupId: {
     type: DataTypes.INTEGER,
@@ -33,7 +33,7 @@ const User = sequelize.define('User', {
       model: 'groups',
       key: 'id',
     },
-    allowNull: true, // Студенти можуть не мати групи 
+    allowNull: true, 
   },
 }, {
   tableName: 'users',

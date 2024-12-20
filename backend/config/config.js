@@ -1,6 +1,5 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
-const nodemailer = require('nodemailer');
 
 const sequelize = new Sequelize(
   process.env.PG_DATABASE,  // Назва БД

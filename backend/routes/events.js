@@ -1,5 +1,5 @@
 const express = require('express');
-const { getAllEvents, createEvent, getEventById, updateEvent, deleteEvent, getDepartmentEvents, getGroupEvents, } = require('../backend/controllers/event.controller');
+const { getAllEvents, createEvent, getEventById, updateEvent, deleteEvent, getDepartmentEvents, getGroupEvents, } = require('../controllers/event.controller');
 const checkRole = require('../middleware/auth.middleware');
 
 const router = express.Router();

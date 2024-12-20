@@ -1,6 +1,8 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../../models/user.model');
+const User = require('../models/user.model');
+const Group = require('../models/group.model');
+const Department = require('../models/department.model');
 
 //Отримати всіх користувачів
 const getAllUsers = async (req, res) => {
@@ -15,7 +17,7 @@ const getAllUsers = async (req, res) => {
 //Створити користувача
 const registerUser = async (req, res) => {
     try {
-        const { email, password, name, role, departmentId, groupId } = req.body;
+        const { email, password, name, role, departmentName, groupName } = req.body;
 
         // Перевірка на валідну роль
         const validRoles = ["student", "teacher", "admin"];
@@ -29,14 +31,24 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: "User with this email already exists" });
         }
 
-        // Перевірка наявності кафедри, якщо користувач — викладач
-        if (role === 'teacher' && !departmentId) {
-            return res.status(400).json({ message: 'Teacher must belong to a department' });
+        // Обробка кафедри для викладача
+        let departmentId = null;
+        if (role === 'teacher') {
+            const department = await Department.findOne({ where: { name: departmentName } });
+            if (!department) {
+                return res.status(400).json({ message: 'Department not found' });
+            }
+            departmentId = department.id; // Отримуємо ID кафедри
         }
 
-        // Перевірка наявності групи, якщо користувач — студент
-        if (role === 'student' && !groupId) {
-            return res.status(400).json({ message: 'Student must belong to a group' });
+        // Якщо користувач — студент, шукаємо групу за її назвою
+        let groupId = null;
+        if (role === 'student') {
+            const group = await Group.findOne({ where: { name: groupName } });
+            if (!group) {
+                return res.status(400).json({ message: 'Group not found' });
+            }
+            groupId = group.id; // отримуємо ID групи
         }
 
         // Шифрування пароля
