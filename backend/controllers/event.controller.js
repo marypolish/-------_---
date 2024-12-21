@@ -1,15 +1,46 @@
 const Event = require('../models/event.model');
 const User = require('../models/user.model');
-const Group = require('../models/group.model');
-const Department = require('../models/department.model');
 
-// Отримати всі події
-const getAllEvents = async (req, res) => {
+// Отримати події з фільтрацією (в залежності від ролі)
+const getFilteredEventsForUser = async (req, res) => {
     try {
-        const events = await Event.findAll();
+        const userRole = req.user.role; // роль користувача
+        const userId = req.user.id; // id користувача
+
+        const { groupId, departmentId, organizerId } = req.query;
+        const whereClause = {};
+
+        if (groupId) whereClause.targetGroupId = groupId;
+        if (departmentId) whereClause.targetDepartmentId = departmentId;
+        if (organizerId) whereClause.organizerId = organizerId;
+
+        // Фільтрація в залежності від ролі користувача
+        if (userRole === 'admin') {
+            // Адміністратор має доступ до всіх подій
+            whereClause.organizerId = organizerId || whereClause.organizerId;
+        } else if (userRole === 'teacher') {
+            // Викладач може бачити події для його кафедри чи групи
+            const teacher = await User.findByPk(userId);
+            if (teacher && teacher.departmentId) {
+                whereClause.targetDepartmentId = teacher.departmentId;
+            }
+        } else if (userRole === 'student') {
+            // Студент може бачити події лише для його групи
+            const student = await User.findByPk(userId);
+            if (student && student.groupId) {
+                whereClause.targetGroupId = student.groupId;
+            }
+        } else {
+            return res.status(403).json({ message: 'Недостатньо прав для доступу до подій' });
+        }
+
+        const events = await Event.findAll({
+            where: whereClause,
+        });
+
         res.status(200).json(events);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: 'Помилка при отриманні подій', error: error.message });
     }
 };
 
@@ -18,31 +49,18 @@ const createEvent = async (req, res) => {
     try {
         const { name, description, date, location, organizerId, targetGroupId, targetDepartmentId } = req.body;
 
-        // Знайти організатора
         const organizer = await User.findByPk(organizerId);
         if (!organizer) {
             return res.status(404).json({ message: 'Organizer not found' });
         }
 
-        // Якщо організатор — викладач, перевірити наявність кафедри
-        if (organizer.role === 'teacher'){
-            if (!organizer.departmentId) {
-            return res.status(400).json({ message: 'Teacher must belong to a department to create events' });
-            }
-
-            //Викладач може створювати події тільки для своєї кафедри
-            if (organizer.departmentId !== targetDepartmentId) {
+        // Перевірки для ролей
+        if (organizer.role === 'teacher') {
+            const teacher = await User.findByPk(organizerId);
+            if (teacher.departmentId !== targetDepartmentId) {
                 return res.status(403).json({ message: 'Teacher can only create events for their own department' });
             }
-        }
-
-        // Якщо організатор — студент, перевірити наявність групи
-        if (organizer.role === 'student') {
-            if (!organizer.groupId) {
-                return res.status(400).json({ message: 'Student must belong to a group to create events' });
-            }
-
-            // Студент може створювати події тільки для своєї групи
+        } else if (organizer.role === 'student') {
             if (organizer.groupId !== targetGroupId) {
                 return res.status(403).json({ message: 'Student can only create events for their own group' });
             }
@@ -55,6 +73,7 @@ const createEvent = async (req, res) => {
             location,
             organizerId,
             targetGroupId,
+            targetDepartmentId,
         });
 
         res.status(201).json(newEvent);
@@ -63,65 +82,31 @@ const createEvent = async (req, res) => {
     }
 };
 
-// Отримати подію за ID
-const getEventById = async (req, res) => {
-    try {
-        const event = await Event.findByPk(req.params.id); // Отримуємо подію за ID
-
-        // Перевірка доступу
-        if (!event) {
-            return res.status(404).json({ message: 'Event not found' });
-        }
-
-        // Логування значень для перевірки
-        console.log('User Group ID:', req.user.groupId); // Вивести ID групи користувача
-        console.log('Event Target Group ID:', event.targetGroupId); // Вивести ID групи події
-
-        // Перевірка для студента
-        if (req.user.role === 'student') {
-            // Студент може отримати доступ лише до подій своєї групи
-            if (!req.user.groupId) {
-                return res.status(403).json({ message: 'Access denied: Missing groupId' });
-            }
-            if (req.user.groupId !== event.targetGroupId) {
-                return res.status(403).json({ message: 'Access denied: Group mismatch' });
-            }
-        } else if (req.user.role === 'teacher') {
-            // Викладач має доступ до всіх подій
-            console.log('Teacher accessing event:', req.user.id);
-        } else if (req.user.role === 'admin') {
-            // Адміністратор має доступ до всіх подій
-            console.log('Admin accessing event:', req.user.id);
-        } else {
-            // Відмова доступу для інших ролей
-            return res.status(403).json({ message: 'Access denied: Role not allowed' });
-        }
-
-        // Якщо доступ дозволено, відправляємо подію
-        return res.status(200).json(event);
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Server error' });
-    }
-};
-
 // Оновити подію
 const updateEvent = async (req, res) => {
     try {
-        const event = await Event.findByPk(req.params.id);
+        const eventId = req.params.eventId;
+        const { name, description, date, location } = req.body;
 
+        const event = await Event.findByPk(eventId);
         if (!event) {
             return res.status(404).json({ message: 'Event not found' });
         }
 
-        // Викладачі можуть редагувати тільки події своєї кафедри
-        if (req.user.role === 'teacher' && event.organizerId !== req.user.id) {
-            return res.status(403).json({ message: 'Access denied' });
-        }
+        // Перевірка доступу до редагування події
+        const userRole = req.user.role;
+        const userId = req.user.id;
+        if (userRole === 'admin' || (userRole === 'teacher' && event.organizerId === userId)) {
+            event.name = name || event.name;
+            event.description = description || event.description;
+            event.date = date || event.date;
+            event.location = location || event.location;
 
-        await event.update(req.body);
-        res.status(200).json(event);
+            await event.save();
+            res.status(200).json(event);
+        } else {
+            res.status(403).json({ message: 'Недостатньо прав для редагування цієї події' });
+        }
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -130,60 +115,30 @@ const updateEvent = async (req, res) => {
 // Видалити подію
 const deleteEvent = async (req, res) => {
     try {
-        const event = await Event.findByPk(req.params.id);
+        const eventId = req.params.eventId;
 
+        const event = await Event.findByPk(eventId);
         if (!event) {
             return res.status(404).json({ message: 'Event not found' });
         }
 
-        // Дозволено тільки адміністраторам
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'Access denied' });
+        // Перевірка доступу до видалення події (тільки адмін може видаляти)
+        const userRole = req.user.role;
+        if (userRole === 'admin') {
+            await event.destroy();
+            res.status(200).json({ message: 'Event deleted successfully' });
+        } else {
+            res.status(403).json({ message: 'Недостатньо прав для видалення цієї події' });
         }
-
-        await event.destroy();
-        res.status(200).json({ message: 'Event deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-// Отримати всі події для певної групи
-const getGroupEvents = async (req, res) => {
-    try {
-        const { groupId } = req.params;
-        const group = await Group.findByPk(groupId);
-        if (!group) {
-            return res.status(404).json({ message: 'Group not found' });
-        }
-        const events = await Event.findAll({ where: { targetGroupId: groupId } });
-        res.status(200).json(events);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-// Отримати всі події для певної кафедри
-const getDepartmentEvents = async (req, res) => {
-    try {
-        const { departmentId } = req.params;
-        const department = await Department.findByPk(departmentId);
-        if (!department) {
-            return res.status(404).json({ message: 'Department not found' });
-        }
-        const events = await Event.findAll({ where: { targetDepartmentId: departmentId } });
-        res.status(200).json(events);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
 
 module.exports = {
-    getAllEvents,
+    getFilteredEventsForUser,
     createEvent,
-    getEventById,
     updateEvent,
     deleteEvent,
-    getGroupEvents,
-    getDepartmentEvents,
 };

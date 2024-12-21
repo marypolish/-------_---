@@ -1,15 +1,13 @@
 const express = require('express');
-const { getEventsForCalendar, getFilteredEvents, addEventToCalendar } = require('../controllers/calendar.controller');
+const { getEventsForCalendar, addEventToCalendar } = require('../controllers/calendar.controller');
+const checkRole = require('../middleware/auth.middleware'); // імпортуємо middleware для перевірки ролей
 
 const router = express.Router();
 
-// Отримати події для календаря за певний період
-router.get('/calendar', getEventsForCalendar);
-
-// Отримати події з фільтрацією
-router.get('/calendar/filter', getFilteredEvents);
+// Отримати події для календаря за певний період і фільтрацією
+router.get('/calendar', checkRole(['admin', 'teacher', 'student']), getEventsForCalendar);
 
 // Додати подію до календаря
-router.post('/calendar', addEventToCalendar);
+router.post('/calendar', checkRole(['admin', 'teacher']), addEventToCalendar);
 
 module.exports = router;

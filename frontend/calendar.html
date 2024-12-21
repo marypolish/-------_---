@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календар подій</title>
+    <link rel="stylesheet" href="./assets/styless.css">
+</head>
+<body>
+    <div class="header">
+        <div class="clock" id="clock">Loading current time...</div>
+    </div>
+
+    <div class="container">
+        <div class="calendar">
+            <h2>Календар</h2>
+            <div class="calendar-nav">
+                <button id="prev-month">❮</button>
+                <span id="calendar-month"></span>
+                <button id="next-month">❯</button>
+            </div>
+            <table id="calendar">
+                <thead>
+                    <tr>
+                        <th>Нд</th>
+                        <th>Пн</th>
+                        <th>Вт</th>
+                        <th>Ср</th>
+                        <th>Чт</th>
+                        <th>Пт</th>
+                        <th>Сб</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="details">
+            <h3>Деталі події</h3>
+            <div id="event-details">Виберіть дату, щоб переглянути події.</div>
+            <ul id="event-list"></ul>
+            <button id="create-event-button" class="btn">Створити нову подію</button>
+            <button id="edit-event-button" class="btn" style="display:none;">Редагувати подію</button>
+            <button id="delete-event-button" class="btn" style="display:none;">Видалити подію</button>
+        </div>
+    </div>
+
+    <div class="modal" id="event-modal">
+        <div class="modal-content">
+            <span class="modal-close" id="modal-close">&times;</span>
+            <h3>Подія</h3>
+            <form class="event-form" id="event-form">
+                <input type="hidden" id="event-id">
+                <label for="event-title">Назва:</label><br>
+                <input type="text" id="event-title" required><br>
+                <label for="event-time">Час:</label><br>
+                <input type="time" id="event-time" required><br>
+                <label for="event-description">Опис:</label><br>
+                <textarea id="event-description"></textarea><br>
+                <button type="button" id="save-event" class="btn">Зберегти</button>
+            </form>
+        </div>
+    </div>
+    <script src="./scripts/calendar.js"></script>
+</body>
+</html>

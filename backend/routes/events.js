@@ -1,22 +1,19 @@
 const express = require('express');
-const { getAllEvents, createEvent, getEventById, updateEvent, deleteEvent, getDepartmentEvents, getGroupEvents, } = require('../controllers/event.controller');
+const { getFilteredEventsForUser, createEvent, updateEvent, deleteEvent } = require('../controllers/event.controller');
 const checkRole = require('../middleware/auth.middleware');
 
 const router = express.Router();
 
-// Отримати всі події (тільки адміністратор)
-router.get('/events', checkRole(['admin']), getAllEvents);
+// Отримати події з фільтрацією
+router.get('/events', checkRole(['admin', 'teacher', 'student']), getFilteredEventsForUser);
 
-// Створення події (адміністратор, викладач або студент)
-router.post('/events', checkRole(['admin', 'teacher', 'student']), createEvent);
+// Створити нову подію
+router.post('/events', checkRole(['admin', 'teacher']), createEvent);
 
-// Отримати подію за ID (всі ролі)
-router.get('/events/:id', checkRole(['admin', 'teacher', 'student']), getEventById);
+// Оновити подію
+router.put('/events/:eventId', checkRole(['admin', 'teacher']), updateEvent);
 
-// Редагування події (адміністратор або викладач)
-router.put('/events/:id', checkRole(['admin', 'teacher']), updateEvent);
-
-// Видалення події (тільки адміністратор)
-router.delete('/events/:id', checkRole(['admin']), deleteEvent);
+// Видалити подію (тільки адмін)
+router.delete('/events/:eventId', checkRole(['admin']), deleteEvent);
 
 module.exports = router;
