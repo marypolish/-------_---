@@ -16,7 +16,7 @@ const getAllEvents = async (req, res) => {
 // Створити нову подію
 const createEvent = async (req, res) => {
     try {
-        const { name, description, date, location, organizerId, targetGroupId, targetDepartmentId, notifyTime } = req.body;
+        const { name, description, date, location, organizerId, targetGroupId, targetDepartmentId } = req.body;
 
         // Знайти організатора
         const organizer = await User.findByPk(organizerId);
@@ -55,7 +55,6 @@ const createEvent = async (req, res) => {
             location,
             organizerId,
             targetGroupId,
-            notifyTime,
         });
 
         res.status(201).json(newEvent);

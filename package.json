@@ -2,9 +2,9 @@
   "name": "smart-calendar",
   "version": "1.0.0",
   "description": "Розумний календар подій для кафедри",
-  "main": "app.js",
+  "main": "backend/app.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "nodemon backend/app.js"
   },
   "keywords": [
     "calendar",
@@ -25,6 +25,7 @@
     "open": "^10.1.0",
     "pg": "^8.13.1",
     "pg-hstore": "^2.3.4",
+    "react-router-dom": "^7.1.0",
     "sequelize": "^6.37.5"
   },
   "devDependencies": {
