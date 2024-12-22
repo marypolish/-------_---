@@ -239,3 +239,23 @@ td.selected {
     background-color: #f0f0f0; /* змінює фон або додає індикатор */
     border-radius: 50%; /* для овального вигляду */
 }
+
+.calendar-nav button {
+    font-size: 1.5em; /* Збільшує розмір тексту */
+    padding: 8px 8px; /* Робить кнопки більшими */
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.calendar-nav button:hover {
+    background-color: #45a049;
+    transform: scale(1.1); /* Легке збільшення при наведенні */
+}
+
+.calendar-nav button:active {
+    transform: scale(1); /* Скидає ефект збільшення при натисканні */
+}

@@ -15,6 +15,9 @@ const clockElement = document.getElementById("clock"); // елемент для 
 let selectedDate = null;
 let selectedEventId = null;
 
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+
 const events = {}; // Об'єкт для збереження подій
 
 // Оновлення часу кожну секунду
@@ -82,14 +85,18 @@ const getEventById = (id) => {
 };
 
 // Функція для створення або редагування події
-const openEventModal = (date) => {
-    selectedDate = date;
+const openEventModal = () => {
+    if (!selectedDate) {
+        alert("Будь ласка, виберіть дату перед створенням події.");
+        return;
+    }
     document.getElementById("event-id").value = '';
     document.getElementById("event-title").value = '';
     document.getElementById("event-time").value = '';
     document.getElementById("event-description").value = '';
     eventModal.style.display = 'flex';
 };
+
 
 // Закрити модальне вікно
 const closeEventModal = () => {
@@ -100,15 +107,12 @@ modalClose.addEventListener('click', closeEventModal);
 
 // Функція для генерування календаря з індикатором дат з подіями
 const generateCalendar = () => {
-    const now = new Date();
-    const month = now.getMonth();
-    const year = now.getFullYear();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const lastDay = new Date(currentYear, currentMonth + 1, 0);
     const daysInMonth = lastDay.getDate();
     const firstDayOfWeek = firstDay.getDay();
 
-    calendarMonth.textContent = `${now.toLocaleString('uk', { month: 'long' })} ${year}`;
+    calendarMonth.textContent = `${firstDay.toLocaleString('uk', { month: 'long' })} ${currentYear}`;
 
     let days = [];
     for (let i = 0; i < firstDayOfWeek; i++) {
@@ -133,14 +137,14 @@ const generateCalendar = () => {
             const td = document.createElement("td");
             td.textContent = day;
             if (day) {
-                const formattedDate = `${day} ${now.toLocaleString('uk', { month: 'long' })} ${year}`;
+                const formattedDate = `${day} ${firstDay.toLocaleString('uk', { month: 'long' })} ${currentYear}`;
                 // Якщо є події на цю дату, додаємо клас 'has-events'
                 if (events[formattedDate] && events[formattedDate].length > 0) {
                     td.classList.add('has-events');
                 }
 
                 td.addEventListener('click', () => {
-                    showEventDetails(new Date(year, month, day));
+                    showEventDetails(new Date(currentYear, currentMonth, day));
                     highlightSelectedDate(td);
                 });
             }
@@ -162,15 +166,21 @@ generateCalendar();
 
 // Перехід до попереднього місяця
 prevMonthButton.addEventListener('click', () => {
-    const now = new Date();
-    now.setMonth(now.getMonth() - 1);
+    currentMonth--;
+    if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+    }
     generateCalendar();
 });
 
 // Перехід до наступного місяця
 nextMonthButton.addEventListener('click', () => {
-    const now = new Date();
-    now.setMonth(now.getMonth() + 1);
+    currentMonth++;
+    if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+    }
     generateCalendar();
 });
 
@@ -214,7 +224,8 @@ saveEventButton.addEventListener('click', () => {
         }
 
         showEventDetails(selectedDate); // Оновлюємо список подій після збереження
-        closeEventModal(); // Закриваємо модальне вікно
+        highlightSelectedDate(calendar.querySelector(`td.selected`)); // Залишаємо виділення на вибраній даті
+        closeEventModal();
     }
 });
 
@@ -225,8 +236,14 @@ deleteEventButton.addEventListener('click', () => {
         if (confirmation) {
             const formattedDate = `${selectedDate.getDate()} ${selectedDate.toLocaleString('uk', { month: 'long' })} ${selectedDate.getFullYear()}`;
             events[formattedDate] = events[formattedDate].filter(event => event.id !== selectedEventId);
-            showEventDetails(selectedDate); // Оновлюємо список подій після видалення
-            closeEventModal(); // Закриваємо модальне вікно
+            
+            if (events[formattedDate].length === 0) {
+                delete events[formattedDate];
+            }
+
+            showEventDetails(selectedDate);
+            highlightSelectedDate(calendar.querySelector(`td.selected`));
+            closeEventModal();
         }
     } else {
         alert("Будь ласка, виберіть подію для видалення.");
@@ -246,3 +263,6 @@ editEventButton.addEventListener('click', () => {
         }
     }
 });
+
+// Генерація календаря
+generateCalendar();
