@@ -1,4 +1,4 @@
-const Event = require('../models/event.model');
+const Event = require('../models/event.model.js');
 const { Op } = require('sequelize');
 
 // Отримати події для календаря з фільтрацією (період, роль, група, кафедра)

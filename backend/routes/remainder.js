@@ -6,18 +6,18 @@ const authMiddleware = require('../middleware/auth.middleware'); // Для за�
 const router = express.Router();
 
 // Отримати всі нагадування (тільки для адміністратора)
-router.get('/remainders', authMiddleware(['admin']), getAllRemainders);
+router.get('/remainders',  getAllRemainders);
 
 // Створити нове нагадування (тільки для авторизованого користувача)
-router.post('/remainders', authMiddleware(['student', 'teacher', 'admin']), createRemainder);
+router.post('/remainders',  createRemainder);
 
 // Отримати нагадування за ID (тільки для авторизованого користувача)
-router.get('/remainders/:id', authMiddleware(['student', 'teacher', 'admin']), getRemainderById);
+router.get('/remainders/:id', getRemainderById);
 
 // Оновити нагадування (тільки організатор або адміністратор)
-router.put('/remainders/:id', authMiddleware(['teacher', 'admin']), updateRemainder);
+router.put('/remainders/:id',  updateRemainder);
 
 // Видалити нагадування (тільки адміністратор)
-router.delete('/remainders/:id', authMiddleware(['admin']), deleteRemainder);
+router.delete('/remainders/:id', deleteRemainder);
 
 module.exports = router;

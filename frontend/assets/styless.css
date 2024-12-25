@@ -1,120 +1,82 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
+/* Загальні стилі */
 body {
-    font-family: 'Roboto', sans-serif;
-    display: flex;
-    flex-direction: column;
+    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f4f7fc;
 }
 
-.header {
-    text-align: center;
-    padding: 20px;
-    background-color: #4CAF50;
+#current-day-time {
+    background-color: #4caf50;
     color: white;
-    font-size: 1.5em;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    padding: 10px;
+    font-size: 18px;
 }
 
-.clock {
-    font-size: 1.2em;
+#current-day-time span {
+    margin: 0 10px;
 }
 
-.container {
-    display: flex;
-    flex: 1;
-    height: calc(100vh - 70px);
-    padding: 20px;
-    gap: 20px;
+/* Контейнер календаря */
+#calendar-container {
+    width: 70%;
+    margin: 20px auto;
 }
 
-.calendar {
-    flex: 1;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    padding: 20px;
+#calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-top: 20px;
+    text-align: center;
 }
 
-.details {
-    flex: 1;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+#calendar-weekdays span {
+    font-weight: bold;
+    padding: 10px;
 }
 
-.details h3 {
-    margin-top: 0;
-    font-size: 1.3em;
-    color: #333;
+#calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-top: 20px;
 }
 
-.details #event-details {
-    margin-bottom: 20px;
-    font-size: 1.1em;
-    color: #666;
+.calendar-day {
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid #ddd;
 }
 
-button.btn {
-    padding: 12px 20px;
-    margin-top: 15px;
-    background-color: #4CAF50;
+.calendar-day.selected {
+    background-color: #4caf50;
+    color: white;
+}
+
+.calendar-day.has-events {
+    background-color: #ffeb3b;
+}
+
+#events-container {
+    margin-top: 20px;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #4caf50;
     color: white;
     border: none;
-    border-radius: 50px;
     cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-    width: 80%;
-    text-align: center;
 }
 
-button.btn:hover {
+button:hover {
     background-color: #45a049;
-    transform: translateY(-2px);
 }
 
-button.btn:active {
-    transform: translateY(2px);
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th, td {
-    padding: 15px;
-    text-align: center;
-    cursor: pointer;
-    background-color: #f9f9f9;
-    border-radius: 6px;
-    transition: background-color 0.3s ease;
-}
-
-td:hover {
-    background-color: #e4f0e2;
-}
-
-.selected {
-    background-color: #d1e7d8;
-}
-
-td.selected {
-    background-color: #4CAF50;
-    color: white;
-}
-
+/* Стилі для модального вікна */
 .modal {
     display: none;
     position: fixed;
@@ -128,134 +90,44 @@ td.selected {
 }
 
 .modal-content {
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    width: 350px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-    animation: slide-up 0.3s ease-out;
-}
-
-@keyframes slide-up {
-    0% {
-        transform: translateY(20px);
-        opacity: 0;
-    }
-    100% {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-@media (max-width: 600px) {
-    .modal-content {
-        width: 90%;
-        max-height: 80vh;
-    }
-}
-
-.modal-close {
-    float: right;
-    cursor: pointer;
-    color: #aaa;
-    font-size: 1.2em;
-}
-
-.modal-close:hover {
-    color: #333;
-}
-
-.event-form {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.event-form input, .event-form textarea {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    font-size: 1em;
-    transition: border-color 0.3s ease;
-}
-
-.event-form input:focus, .event-form textarea:focus {
-    border-color: #4CAF50;
-    outline: none;
-}
-
-.event-form button {
-    padding: 12px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    font-size: 1em;
-}
-
-.selected-event {
-    background-color: #4CAF50;
-    color: white;
-    border-radius: 20px; /* Створює ефект овала */
-    padding: 5px 15px; /* Можна налаштувати за потребою */
-    margin: 5px 0;
-}
-
-.selected {
-    background-color: #cce5ff; /* Світло-блакитний фон для виділеної дати */
-    border-radius: 50%;
-}
-
-#event-modal {
-    display: none; /* Початково прихований */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    justify-content: center;
-    align-items: center;
-}
-
-#event-modal .modal-content {
-    background: white;
+    background-color: white;
     padding: 20px;
     border-radius: 5px;
-    min-width: 300px;
+    width: 50%;
 }
 
-#event-modal input, #event-modal textarea {
-    width: 100%;
-    margin: 5px 0;
-    padding: 10px;
-    box-sizing: border-box;
-}
-
-.has-events {
-    background-color: #f0f0f0; /* змінює фон або додає індикатор */
-    border-radius: 50%; /* для овального вигляду */
-}
-
-.calendar-nav button {
-    font-size: 1.5em; /* Збільшує розмір тексту */
-    padding: 8px 8px; /* Робить кнопки більшими */
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 8px;
+.close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 30px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.calendar-nav button:hover {
+#create-event-form label {
+    display: block;
+    margin: 10px 0 5px;
+}
+
+#create-event-form input,
+#create-event-form textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+}
+
+#create-event-form button {
     background-color: #45a049;
-    transform: scale(1.1); /* Легке збільшення при наведенні */
 }
 
-.calendar-nav button:active {
-    transform: scale(1); /* Скидає ефект збільшення при натисканні */
+/* Стилі для кнопок редагування та видалення */
+button#edit-event-btn,
+button#delete-event-btn {
+    margin-top: 10px;
+    background-color: #f44336;
+}
+
+button#edit-event-btn:hover,
+button#delete-event-btn:hover {
+    background-color: #d32f2f;
 }

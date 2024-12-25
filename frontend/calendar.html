@@ -1,66 +1,72 @@
 <!DOCTYPE html>
 <html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Календар подій</title>
-    <link rel="stylesheet" href="./assets/styless.css">
-</head>
-<body>
-    <div class="header">
-        <div class="clock" id="clock">Loading current time...</div>
-    </div>
-
-    <div class="container">
-        <div class="calendar">
-            <h2>Календар</h2>
-            <div class="calendar-nav">
-                <button id="prev-month">❮</button>
-                <span id="calendar-month"></span>
-                <button id="next-month">❯</button>
-            </div>
-            <table id="calendar">
-                <thead>
-                    <tr>
-                        <th>Нд</th>
-                        <th>Пн</th>
-                        <th>Вт</th>
-                        <th>Ср</th>
-                        <th>Чт</th>
-                        <th>Пт</th>
-                        <th>Сб</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+    <link rel="stylesheet" href="./assets/styless.css" />
+  </head>
+  <body>
+    <body>
+      <!-- Поточний день і час -->
+      <div id="current-day-time">
+        <span id="current-day"></span>
+        <span id="current-time"></span>
+      </div>
+  
+      <div id="calendar-container">
+        <h2 id="current-month"></h2>
+        <div id="calendar-nav">
+          <button id="prev-month">&lt; Попередній</button>
+          <button id="next-month">Наступний &gt;</button>
         </div>
-
-        <div class="details">
-            <h3>Деталі події</h3>
-            <div id="event-details">Виберіть дату, щоб переглянути події.</div>
-            <ul id="event-list"></ul>
-            <button id="create-event-button" class="btn">Створити нову подію</button>
-            <button id="edit-event-button" class="btn" style="display:none;">Редагувати подію</button>
-            <button id="delete-event-button" class="btn" style="display:none;">Видалити подію</button>
+        <!-- Дні тижня -->
+        <div id="calendar-weekdays">
+          <span>Пн</span>
+          <span>Вт</span>
+          <span>Ср</span>
+          <span>Чт</span>
+          <span>Пт</span>
+          <span>Сб</span>
+          <span>Нд</span>
         </div>
-    </div>
-
-    <div class="modal" id="event-modal">
-        <div class="modal-content">
-            <span class="modal-close" id="modal-close">&times;</span>
-            <h3>Подія</h3>
-            <form class="event-form" id="event-form">
-                <input type="hidden" id="event-id">
-                <label for="event-title">Назва:</label><br>
-                <input type="text" id="event-title" required><br>
-                <label for="event-time">Час:</label><br>
-                <input type="time" id="event-time" required><br>
-                <label for="event-description">Опис:</label><br>
-                <textarea id="event-description"></textarea><br>
-                <button type="button" id="save-event" class="btn">Зберегти</button>
+        <div id="calendar-grid"></div>
+      </div>
+  
+      <div id="events-container">
+        <h3>Події на <span id="selected-date"></span></h3>
+        <ul id="events-list"></ul>
+  
+        <!-- Кнопка створення події -->
+        <button id="create-event-btn">Створити подію</button>
+  
+        <!-- Модальне вікно для створення події -->
+        <div id="create-event-modal" class="modal">
+          <div class="modal-content">
+            <span id="close-modal-btn" class="close">&times;</span>
+            <h3>Створити нову подію</h3>
+            <form id="create-event-form">
+              <label for="event-name">Назва події</label>
+              <input type="text" id="event-name" required />
+  
+              <label for="event-description">Опис події</label>
+              <textarea id="event-description" required></textarea>
+  
+              <label for="event-date">Дата події</label>
+              <input type="date" id="event-date" required />
+  
+              <label for="event-location">Місце проведення</label>
+              <input type="text" id="event-location" required />
+  
+              <button type="submit">Створити</button>
             </form>
+          </div>
         </div>
-    </div>
-    <script src="./scripts/calendar.js"></script>
-</body>
+  
+        <!-- Кнопки редагування та видалення -->
+        <button id="edit-event-btn" style="display: none">Редагувати подію</button>
+        <button id="delete-event-btn" style="display: none">Видалити подію</button>
+      </div>
+    <script src="./scripts/calendaryk.js"></script>
+  </body>
 </html>
