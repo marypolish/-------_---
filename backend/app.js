@@ -5,7 +5,6 @@ const eventRoutes = require('./routes/events.js');
 const userRoutes = require('./routes/user.js');
 const groupRoutes = require('./routes/group.js');
 const departmentRoutes = require('./routes/department.js');
-const calendarRoutes = require('./routes/calendar.js');
 const remainderRoutes = require('./routes/remainder.js');
 
 const app = express();
@@ -27,7 +26,6 @@ app.use('/api', eventRoutes);
 app.use('/api', userRoutes);
 app.use('/api', groupRoutes);
 app.use('/api', departmentRoutes);
-app.use('/api', calendarRoutes);
 app.use('/api', remainderRoutes);
 
 // Синхронізація бази даних
