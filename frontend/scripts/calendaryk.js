@@ -187,13 +187,18 @@ document.addEventListener("DOMContentLoaded", function () {
         <button class="delete-event-btn">Видалити</button>
       `;
 
-        // Додаємо обробник події для кнопки "Редагувати"
-        eventItem
-          .querySelector(".edit-event-btn")
-          .addEventListener("click", () => {
-            selectedEvent = event; // Зберігаємо вибрану подію
-            openEditModal(selectedEvent); // Відкриваємо модальне вікно
-          });
+        if (userRole === "admin" || userRole === "teacher") {
+          // Додаємо обробник події для кнопки "Редагувати"
+          eventItem
+            .querySelector(".edit-event-btn")
+            .addEventListener("click", () => {
+              selectedEvent = event; // Зберігаємо вибрану подію
+              openEditModal(selectedEvent); // Відкриваємо модальне вікно
+            });
+        } else {
+          // Якщо не адмін, приховуємо кнопку "Видалити"
+          eventItem.querySelector(".edit-event-btn").style.display = "none";
+        }
 
         // Перевірка, чи є поточний користувач адміністратором
         if (userRole === "admin") {
