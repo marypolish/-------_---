@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
+  const logoutButton = document.getElementById("logout-btn");
+
   // Отримуємо всі необхідні дані з localStorage
   const userRole = localStorage.getItem("userRole");
   const userId = localStorage.getItem("userId");
@@ -11,10 +13,9 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
-  // Відображення кнопок редагування/видалення
-  if (userRole === "admin" || userRole === "teacher") {
-    document.getElementById("edit-event-btn").style.display = "inline-block";
-    document.getElementById("delete-event-btn").style.display = "inline-block";
+  // У разі необхідності, відобразити поля для адміністраторів
+  if (userRole === "admin") {
+    document.getElementById("admin-fields").style.display = "block";
   }
 
   // Формуємо параметри запиту для отримання подій
@@ -140,6 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
   }
 
+  // Оновлений код із кнопкою редагування подій
   function handleDayClick(day) {
     // Знімаємо підсвітку з усіх днів
     document.querySelectorAll(".calendar-day").forEach((cell) => {
@@ -155,7 +157,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // Отримання поточного року та місяця
     const selectedDate = formatDate(currentYear, currentMonth, day);
 
-    document.getElementById("selected-date").textContent = selectedDate;
+    document.getElementById(
+      "selected-date"
+    ).textContent = `${day} ${getMonthName(currentMonth)} ${currentYear}`;
 
     // Фільтруємо події для вибраної дати
     const eventsForSelectedDate = allEvents.filter((event) =>
@@ -163,18 +167,6 @@ document.addEventListener("DOMContentLoaded", function () {
     );
     displayEvents(eventsForSelectedDate); // Виводимо події для вибраної дати
   }
-
-  prevMonthButton.addEventListener("click", () => {
-    currentMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-    if (currentMonth === 11) currentYear--;
-    updateCalendar();
-  });
-
-  nextMonthButton.addEventListener("click", () => {
-    currentMonth = currentMonth === 11 ? 0 : currentMonth + 1;
-    if (currentMonth === 0) currentYear++;
-    updateCalendar();
-  });
 
   function displayEvents(events) {
     const eventsList = document.getElementById("events-list");
@@ -187,16 +179,149 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       events.forEach((event) => {
         const eventItem = document.createElement("li");
-        // Виведення назви події, опису і локації
         eventItem.innerHTML = `
-      <strong>${event.name}</strong><br>
-      <span>${event.description}</span><br>
-      <span><em>Локація: ${event.location}</em></span>
-    `;
+        <strong>${event.name}</strong><br>
+        <span>${event.description}</span><br>
+        <span><em>Локація: ${event.location}</em></span><br>
+        <button class="edit-event-btn">Редагувати</button>
+        <button class="delete-event-btn">Видалити</button>
+      `;
+
+        // Додаємо обробник події для кнопки "Редагувати"
+        eventItem
+          .querySelector(".edit-event-btn")
+          .addEventListener("click", () => {
+            selectedEvent = event; // Зберігаємо вибрану подію
+            openEditModal(selectedEvent); // Відкриваємо модальне вікно
+          });
+
+        // Перевірка, чи є поточний користувач адміністратором
+        if (userRole === "admin") {
+          // Додаємо обробник події для кнопки "Видалити"
+          eventItem
+            .querySelector(".delete-event-btn")
+            .addEventListener("click", () => {
+              const confirmation = confirm(
+                "Ви дійсно хочете видалити цю подію?"
+              );
+              if (confirmation) {
+                selectedtoDEvent = event; // Зберігаємо вибрану подію
+                deleteEvent(selectedtoDEvent); // Видаляємо подію за її ID
+              }
+            });
+        } else {
+          // Якщо не адмін, приховуємо кнопку "Видалити"
+          eventItem.querySelector(".delete-event-btn").style.display = "none";
+        }
+
         eventsList.appendChild(eventItem);
       });
     }
   }
+
+  function openEditModal(event) {
+    // Відкриваємо модальне вікно для редагування
+    const editModal = document.getElementById("edit-event-modal");
+    const editEventForm = document.getElementById("edit-event-form");
+
+    // Заповнюємо поля форми даними події
+    document.getElementById("edit-event-name").value = event.name;
+    document.getElementById("edit-event-description").value = event.description;
+    document.getElementById("edit-event-location").value = event.location;
+
+    // Приховуємо поле дати (вже не потрібне для редагування)
+    document.getElementById("edit-event-date").value = event.date; // Зберігаємо дату, але не надаємо її для редагування
+
+    // Показуємо модальне вікно
+    editModal.style.display = "block";
+
+    // Видаляємо попередні обробники форми та кнопки скасування
+    editEventForm.onsubmit = null;
+    const cancelBtn = document.getElementById("cancel-edit-btn");
+    cancelBtn.removeEventListener("click", closeEditModal); // Очистка попереднього обробника
+    cancelBtn.addEventListener("click", closeEditModal); // Додаємо новий обробник
+
+    // Обробляємо збереження змін
+    editEventForm.onsubmit = async function (e) {
+      e.preventDefault();
+
+      // Оновлюємо дані події
+      const updatedEvent = {
+        name: document.getElementById("edit-event-name").value,
+        description: document.getElementById("edit-event-description").value,
+        location: document.getElementById("edit-event-location").value,
+      };
+
+      // Формуємо запит для оновлення події
+      const params = new URLSearchParams();
+      params.append("userRole", userRole);
+      params.append("userId", userId);
+
+      if (groupId) params.append("groupId", groupId); // Для студентів
+      if (departmentId) params.append("departmentId", departmentId); // Для викладачів
+
+      // Відправляємо запит для оновлення події на сервері
+      try {
+        const response = await fetch(
+          `http://localhost:5500/api/events/update/${
+            event.id
+          }?${params.toString()}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedEvent), // Відправляємо тільки оновлені дані без дати
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Не вдалося оновити подію");
+        }
+        // Додаємо оновлену подію в масив всіх подій
+        const updatedEventIndex = allEvents.findIndex((e) => e.id === event.id);
+        if (updatedEventIndex !== -1) {
+          allEvents[updatedEventIndex] = {
+            ...allEvents[updatedEventIndex],
+            ...updatedEvent, // Обновлені дані
+          };
+        }
+
+        // Оновлюємо календар
+        updateCalendar();
+        // Закриваємо модальне вікно
+        closeEditModal();
+      } catch (error) {
+        console.error("Помилка оновлення події", error);
+      }
+    };
+  }
+
+  // Закриваємо модальне вікно
+  function closeEditModal() {
+    document.getElementById("edit-event-modal").style.display = "none";
+  }
+
+  // Кнопки перемикання між місяцями
+  prevMonthButton.addEventListener("click", () => {
+    if (currentMonth === 0) {
+      currentMonth = 11;
+      currentYear--;
+    } else {
+      currentMonth--;
+    }
+    updateCalendar();
+  });
+
+  nextMonthButton.addEventListener("click", () => {
+    if (currentMonth === 11) {
+      currentMonth = 0;
+      currentYear++;
+    } else {
+      currentMonth++;
+    }
+    updateCalendar();
+  });
 
   // Обробка відкриття модального вікна
   const createEventBtn = document.getElementById("create-event-btn");
@@ -221,6 +346,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const description = document.getElementById("event-description").value;
     const date = document.getElementById("event-date").value;
     const location = document.getElementById("event-location").value;
+
+    // Отримуємо додаткові дані для адміністраторів
+    const groupId = document.getElementById("event-group-id").value;
+    const departmentId = document.getElementById("event-department-id").value;
 
     // Формуємо запит для створення події
     const params = new URLSearchParams();
@@ -260,18 +389,65 @@ document.addEventListener("DOMContentLoaded", function () {
       const newEvent = await response.json();
       console.log("Подія створена:", newEvent);
 
-      // Додаємо нову подію до списку подій
+      // Оновлюємо календар після створення події
       allEvents.push(newEvent);
-
-      // Закриваємо модальне вікно після успішного створення події
-      modal.style.display = "none";
-
-      // Оновлюємо календар
       updateCalendar();
+      closeCreateEventModal(); // Закриваємо модальне вікно після створення
     } catch (error) {
-      console.error("Помилка при створенні події:", error);
+      console.error("Помилка створення події", error);
     }
-
-    updateCalendar(); // Оновлюємо календар після створення події
   });
+
+  // Закриття модального вікна після створення події
+  function closeCreateEventModal() {
+    document.getElementById("create-event-modal").style.display = "none";
+  }
+
+  // Функція для видалення події
+  async function deleteEvent(event) {
+    // Формуємо запит для оновлення події
+    const params = new URLSearchParams();
+    params.append("userRole", userRole);
+    params.append("userId", userId);
+
+    // Формуємо запит для видалення події через API
+    try {
+      const response = await fetch(
+        `http://localhost:5500/api/events/delete/${
+          event.id
+        }?${params.toString()}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok) {
+        alert(result.message || "Подію успішно видалено");
+        updateCalendar(); // Оновлюємо список подій для поточної дати
+      } else {
+        alert(result.message || "Не вдалося видалити подію");
+      }
+    } catch (error) {
+      console.error("Помилка:", error);
+      alert("Сталася помилка при видаленні події");
+    }
+  }
+
+  // Кнопка виходу з системи
+  logoutButton.addEventListener("click", () => {
+    const confirmLogout = confirm("Ви дійсно хочете вийти?");
+    if (confirmLogout) {
+      // Видалення даних з localStorage
+      localStorage.clear(); // Очищаємо дані користувача з localStorage
+      window.location.href = "/login.html"; // Перенаправляємо на сторінку входу
+    }
+  });
+
+  // Початкове завантаження календаря
+  updateCalendar();
 });

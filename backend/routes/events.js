@@ -1,5 +1,5 @@
 const express = require('express');
-const { getFilteredEventsForUser, createEvent, updateEvent, deleteEvent, getEventsBySingleDate } = require('../controllers/event.controller');
+const { getFilteredEventsForUser, createEvent, updateEvent, deleteEvent } = require('../controllers/event.controller');
 
 const router = express.Router();
 
@@ -10,11 +10,9 @@ router.get('/events/user/events',  getFilteredEventsForUser);
 router.post('/events/create', createEvent);
 
 // Оновити подію
-router.put('/events/update/a/:eventId',  updateEvent);
+router.put('/events/update/:eventId',  updateEvent);
 
 // Видалити подію (тільки адмін)
-router.delete('//events/delete/:eventId', deleteEvent);
-
-router.get('/by-date', getEventsBySingleDate);
+router.delete('/events/delete/:eventId', deleteEvent);
 
 module.exports = router;

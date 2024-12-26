@@ -9,7 +9,9 @@ const getFilteredEventsForUser = async (req, res) => {
 
     // Перевірка наявності ролі та ID користувача
     if (!userRole || !userId) {
-      return res.status(400).json({ message: "Role and user ID must be provided" });
+      return res
+        .status(400)
+        .json({ message: "Role and user ID must be provided" });
     }
 
     let whereClause = {};
@@ -22,18 +24,24 @@ const getFilteredEventsForUser = async (req, res) => {
       // Вчитель бачить події тільки для своєї кафедри
       const teacher = await User.findByPk(userId);
       if (!teacher || !teacher.departmentId) {
-        return res.status(403).json({ message: "Teacher must belong to a department" });
+        return res
+          .status(403)
+          .json({ message: "Teacher must belong to a department" });
       }
       whereClause.targetDepartmentId = teacher.departmentId;
     } else if (userRole === "student") {
       // Студент бачить події тільки для своєї групи
       const student = await User.findByPk(userId);
       if (!student || !student.groupId) {
-        return res.status(403).json({ message: "Student must belong to a group" });
+        return res
+          .status(403)
+          .json({ message: "Student must belong to a group" });
       }
       whereClause.targetGroupId = student.groupId;
     } else {
-      return res.status(403).json({ message: "Role is not allowed to access events" });
+      return res
+        .status(403)
+        .json({ message: "Role is not allowed to access events" });
     }
 
     // Пошук подій за умовами
@@ -46,7 +54,9 @@ const getFilteredEventsForUser = async (req, res) => {
 
     res.status(200).json(events);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching events", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching events", error: error.message });
   }
 };
 
@@ -70,6 +80,7 @@ const createEvent = async (req, res) => {
     }
 
     if (userRole === "admin") {
+      // Якщо роль адміністратор, дозволяємо заповнювати обидва ID
       const newEvent = await Event.create({
         name,
         description,
@@ -123,116 +134,85 @@ const createEvent = async (req, res) => {
   }
 };
 
-// Оновити подію
 const updateEvent = async (req, res) => {
   try {
+    const { userRole, userId, departmentId } = req.query; // Отримуємо з параметрів запиту
     const eventId = req.params.eventId;
-    const { name, description, date, location } = req.body;
+    const { name, description, location } = req.body; // Без дати, оскільки вона не редагується
 
+    // Знайти подію за ID
     const event = await Event.findByPk(eventId);
     if (!event) {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    const userRole = req.query.userRole;
-    const userId = req.query.userId;
+    // Логування події та користувача
+    console.log("Event departmentId:", event.targetDepartmentId);
+    console.log("User departmentId:", departmentId);
 
-    if (
-      userRole === "admin" ||
-      (userRole === "teacher" && event.organizerId === userId)
-    ) {
-      event.name = name || event.name;
-      event.description = description || event.description;
-      event.date = date || event.date;
-      event.location = location || event.location;
-
-      await event.save();
-      res.status(200).json(event);
+    // Перевірка прав доступу
+    if (userRole === "admin") {
+      // Адмін може редагувати всі події
+    } else if (userRole === "teacher") {
+      // Викладач може редагувати тільки події своєї кафедри
+      const teacher = await User.findByPk(userId);
+      if (!teacher || teacher.departmentId !== event.targetDepartmentId) {
+        return res.status(403).json({
+          message: `Teacher with ID ${userId} is not allowed to edit events from department ${event.targetDepartmentId}`,
+        });
+      }
+    } else if (userRole === "student") {
+      // Студент не має права редагувати події
+      return res.status(403).json({ message: "Students cannot edit events" });
     } else {
-      res
+      return res
         .status(403)
-        .json({ message: "Insufficient permissions to update this event" });
+        .json({ message: "Role is not allowed to update events" });
     }
+
+    // Оновлюємо подію
+    event.name = name || event.name;
+    event.description = description || event.description;
+    event.location = location || event.location;
+    // Дата не змінюється
+
+    // Зберігаємо зміни
+    await event.save();
+    res.status(200).json(event); // Відправляємо оновлену подію в відповіді
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message }); // Обробка помилок
   }
 };
 
 // Видалити подію
 const deleteEvent = async (req, res) => {
   try {
-    const eventId = req.params.eventId;
+    const eventId = req.params.eventId; // ID події з параметрів маршруту
+    const userRole = req.query.userRole; // Роль користувача (тимчасово через query)
 
+    // Знаходимо подію за ID
     const event = await Event.findByPk(eventId);
+
     if (!event) {
-      return res.status(404).json({ message: "Event not found" });
+      return res.status(404).json({ message: "Подію не знайдено" });
     }
 
-    const userRole = req.query.userRole;
-
-    if (userRole === "admin") {
-      await event.destroy();
-      res.status(200).json({ message: "Event deleted successfully" });
-    } else {
-      res
-        .status(403)
-        .json({ message: "Insufficient permissions to delete this event" });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Отримати події за однією датою
-const getEventsBySingleDate = async (req, res) => {
-  try {
-    const { userRole, userId, date, departmentId, groupId } = req.query;
-
-    if (!userRole || !userId || !date) {
+    // Перевірка прав доступу
+    if (userRole !== "admin") {
       return res
-        .status(400)
-        .json({ message: "Role, user ID, and date must be provided" });
+        .status(403)
+        .json({ message: "Недостатньо прав для видалення цієї події" });
     }
 
-    // Переводимо дату в початок і кінець дня для порівняння
-    const startDate = moment(date).startOf('day').toISOString(); // Початок дня
-    const endDate = moment(date).endOf('day').toISOString(); // Кінець дня
-
-    const whereClause = {
-      date: {
-        [Op.between]: [startDate, endDate],
-      },
-    };
-
-    // Роль користувача
-    if (userRole === "admin") {
-      whereClause.organizerId = userId;
-    } else if (userRole === "teacher") {
-      if (!departmentId) {
-        return res.status(400).json({ message: "Department ID must be provided for teacher" });
-      }
-      whereClause.targetDepartmentId = departmentId;
-    } else if (userRole === "student") {
-      if (!groupId) {
-        return res.status(400).json({ message: "Group ID must be provided for student" });
-      }
-      whereClause.targetGroupId = groupId;
-    } else {
-      return res.status(403).json({ message: "Role is not allowed to access events" });
-    }
-
-    // Запит до бази даних для отримання подій
-    const events = await Event.findAll({ where: whereClause });
-
-    if (events.length === 0) {
-      return res.status(200).json({ message: "No events found for the selected date" });
-    }
-
-    res.status(200).json(events);
+    // Видалення події
+    await event.destroy();
+    return res.status(200).json({ message: "Подію успішно видалено" });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching events", error: error.message });
+    console.error("Помилка видалення події:", error.message);
+    return res.status(500).json({ message: "Помилка сервера", error: error.message });
   }
 };
+
 
 
 module.exports = {
@@ -240,5 +220,4 @@ module.exports = {
   createEvent,
   updateEvent,
   deleteEvent,
-  getEventsBySingleDate,
 };

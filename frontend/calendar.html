@@ -7,66 +7,90 @@
     <link rel="stylesheet" href="./assets/styless.css" />
   </head>
   <body>
-    <body>
-      <!-- Поточний день і час -->
-      <div id="current-day-time">
-        <span id="current-day"></span>
-        <span id="current-time"></span>
+    <!-- Поточний день і час -->
+    <div id="current-day-time">
+      <span id="current-day"></span>
+      <span id="current-time"></span>
+    </div>
+
+    <div id="calendar-container">
+      <h2 id="current-month"></h2>
+      <div id="calendar-nav">
+        <button id="prev-month">&lt; Попередній</button>
+        <button id="next-month">Наступний &gt;</button>
       </div>
-  
-      <div id="calendar-container">
-        <h2 id="current-month"></h2>
-        <div id="calendar-nav">
-          <button id="prev-month">&lt; Попередній</button>
-          <button id="next-month">Наступний &gt;</button>
-        </div>
-        <!-- Дні тижня -->
-        <div id="calendar-weekdays">
-          <span>Пн</span>
-          <span>Вт</span>
-          <span>Ср</span>
-          <span>Чт</span>
-          <span>Пт</span>
-          <span>Сб</span>
-          <span>Нд</span>
-        </div>
-        <div id="calendar-grid"></div>
+      <div id="calendar-weekdays">
+        <span>Пн</span>
+        <span>Вт</span>
+        <span>Ср</span>
+        <span>Чт</span>
+        <span>Пт</span>
+        <span>Сб</span>
+        <span>Нд</span>
       </div>
-  
-      <div id="events-container">
-        <h3>Події на <span id="selected-date"></span></h3>
-        <ul id="events-list"></ul>
-  
-        <!-- Кнопка створення події -->
-        <button id="create-event-btn">Створити подію</button>
-  
-        <!-- Модальне вікно для створення події -->
-        <div id="create-event-modal" class="modal">
-          <div class="modal-content">
-            <span id="close-modal-btn" class="close">&times;</span>
-            <h3>Створити нову подію</h3>
-            <form id="create-event-form">
-              <label for="event-name">Назва події</label>
-              <input type="text" id="event-name" required />
-  
-              <label for="event-description">Опис події</label>
-              <textarea id="event-description" required></textarea>
-  
-              <label for="event-date">Дата події</label>
-              <input type="date" id="event-date" required />
-  
-              <label for="event-location">Місце проведення</label>
-              <input type="text" id="event-location" required />
-  
-              <button type="submit">Створити</button>
-            </form>
-          </div>
+      <div id="calendar-grid"></div>
+    </div>
+
+    <div id="events-container">
+      <h3>Події на <span id="selected-date"></span></h3>
+      <ul id="events-list"></ul>
+      <button id="create-event-btn">Створити подію</button>
+
+      <!-- Модальне вікно для створення події -->
+      <div id="create-event-modal" class="modal">
+        <div class="modal-content">
+          <span id="close-modal-btn" class="close">&times;</span>
+          <h3>Створити нову подію</h3>
+          <form id="create-event-form">
+            <label for="event-name">Назва події</label>
+            <input type="text" id="event-name" required />
+
+            <label for="event-description">Опис події</label>
+            <textarea id="event-description" required></textarea>
+
+            <label for="event-date">Дата події</label>
+            <input type="date" id="event-date" required />
+
+            <label for="event-location">Місце проведення</label>
+            <input type="text" id="event-location" required />
+
+            <!-- Поля для адміністраторів -->
+            <div id="admin-fields" style="display: none">
+              <label for="event-group-id">ID групи</label>
+              <input type="text" id="event-group-id" />
+
+              <label for="event-department-id">ID кафедри</label>
+              <input type="text" id="event-department-id" />
+            </div>
+
+            <button type="submit">Створити</button>
+          </form>
         </div>
-  
-        <!-- Кнопки редагування та видалення -->
-        <button id="edit-event-btn" style="display: none">Редагувати подію</button>
-        <button id="delete-event-btn" style="display: none">Видалити подію</button>
       </div>
+
+      <!-- Відкриваємо модальне вікно для редагування -->
+      <div id="edit-event-modal" style="display: none">
+        <form id="edit-event-form">
+          <label for="edit-event-name">Назва події</label>
+          <input type="text" id="edit-event-name" required />
+
+          <label for="edit-event-description">Опис події</label>
+          <input type="text" id="edit-event-description" required />
+
+          <label for="edit-event-location">Місце події</label>
+          <input type="text" id="edit-event-location" required />
+
+          <!-- Приховане поле дати -->
+          <input type="hidden" id="edit-event-date" />
+          <input type="hidden" id="delete-event-date" />
+
+          <button type="submit">Зберегти</button>
+          <button type="button" id="cancel-edit-btn">Скасувати</button>
+        </form>
+      </div>
+    </div>
+
+    <button id="logout-btn">Вийти</button>
     <script src="./scripts/calendaryk.js"></script>
   </body>
 </html>

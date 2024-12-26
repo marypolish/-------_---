@@ -17,6 +17,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json()); // Підключаємо middleware для парсингу JSON
+app.options('*', cors());  // Дозволяє обробляти запити OPTIONS для всіх маршрутів
 
 // Статичні файли
 app.use(express.static('frontend')); // Це дозволить серверу сервувати файли з папки "frontend"
